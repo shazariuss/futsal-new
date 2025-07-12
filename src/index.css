@@ -1,0 +1,137 @@
+@import url("https://fonts.googleapis.com/css2?family=Arial:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@config '../tailwind.config.js';
+
+@layer base {
+    body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.4;
+        background: #4a359a;
+        min-height: 100vh;
+    }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+@layer components {
+    /* TFA Style Header */
+    .tfa-header {
+        @apply bg-gradient-to-r from-purple-800 to-purple-900 text-white;
+    }
+
+    .tfa-nav {
+        @apply bg-purple-700 border-b border-purple-600;
+    }
+
+    .tfa-nav-item {
+        @apply px-4 py-3 text-white hover:bg-purple-600 transition-colors duration-200 border-r border-purple-600;
+    }
+
+    .tfa-nav-item.active {
+        @apply bg-purple-600;
+    }
+
+    /* TFA Style Tables */
+    .tfa-table {
+        @apply w-full bg-white border border-gray-300;
+    }
+
+    .tfa-table thead {
+        @apply bg-gray-100 border-b border-gray-300;
+    }
+
+    .tfa-table th {
+        @apply px-3 py-2 text-left text-sm font-semibold text-gray-700 border-r border-gray-300;
+    }
+
+    .tfa-table tbody tr {
+        @apply border-b border-gray-200 hover:bg-gray-50;
+    }
+
+    .tfa-table tbody tr:nth-child(even) {
+        @apply bg-gray-50;
+    }
+
+    .tfa-table td {
+        @apply px-3 py-2 text-sm border-r border-gray-200;
+    }
+
+    /* TFA Style Match Results */
+    .match-time {
+        @apply text-xs text-gray-600;
+    }
+
+    .team-name {
+        @apply font-medium text-gray-900;
+    }
+
+    .match-score {
+        @apply font-bold text-center;
+    }
+
+    .status-finished {
+        @apply text-green-600;
+    }
+
+    .status-live {
+        @apply text-red-600 animate-pulse;
+    }
+
+    .status-upcoming {
+        @apply text-blue-600;
+    }
+
+    /* TFA Style Containers */
+    .tfa-container {
+        @apply max-w-7xl mx-auto px-4 py-6 bg-white rounded-lg shadow-lg mb-6;
+    }
+
+    .tfa-section-title {
+        @apply text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200;
+    }
+
+    /* TFA Style Sidebar */
+    .tfa-sidebar {
+        @apply bg-white rounded-lg shadow-lg p-4;
+    }
+
+    .tfa-sidebar-item {
+        @apply block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded;
+    }
+
+    .tfa-news-item {
+        @apply border-b border-gray-200 pb-3 mb-3 last:border-b-0;
+    }
+}
+
+/* TFA Style Layout */
+.tfa-layout {
+    background: #4a359a;
+    min-height: 100vh;
+}
+
+.tfa-main-content {
+    background: #f5f5f5;
+    min-height: calc(100vh - 120px);
+    padding: 20px 0;
+}
+
+/* TFA Style Colors for match results */
+.score-home-win {
+    color: #16a085;
+    font-weight: bold;
+}
+.score-away-win {
+    color: #e74c3c;
+    font-weight: bold;
+}
+.score-draw {
+    color: #f39c12;
+    font-weight: bold;
+}
