@@ -16,6 +16,7 @@ import {
 import { homeApi, newsApi } from "../services/api";
 import { useLanguageStore } from "../store/languageStore";
 import { useNavigate } from "react-router-dom";
+import FootballBackground from "../components/FootballBackground";
 
 const Home = () => {
     const { language, getTranslation } = useLanguageStore();
