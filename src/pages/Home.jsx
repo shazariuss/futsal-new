@@ -17,10 +17,13 @@ import { homeApi, newsApi } from "../services/api";
 import { useLanguageStore } from "../store/languageStore";
 import { useNavigate } from "react-router-dom";
 import FootballBackground from "../components/FootballBackground";
+import { useState } from "react";
 
 const Home = () => {
     const { language, getTranslation } = useLanguageStore();
     const navigate = useNavigate();
+
+    const [tableTab, setTableTab] = useState("table"); // "table", "form"
 
     const { data: lastMatches } = useQuery({
         queryKey: ["lastMatches"],
@@ -98,221 +101,303 @@ const Home = () => {
         return "score-draw";
     };
 
+    // Функция для цвета формы
+    const getFormColor = (result) => {
+        if (result === "В") return "bg-green-500";
+        if (result === "Н") return "bg-blue-400";
+        if (result === "П") return "bg-red-500";
+        return "bg-gray-400";
+    };
+
+    // Получить массив формы из данных (примерная заглушка, можно заменить на реальные данные)
+    const getTeamForm = (team) => {
+        // team.data.form должен быть массивом ["В", "П", "В", "Н", ...]
+        // Если такого нет, просто генерируем случайно для примера:
+        if (team.data?.form) return team.data.form;
+        const results = ["В", "П", "Н"];
+        return Array(5)
+            .fill(0)
+            .map(() => results[Math.floor(Math.random() * results.length)]);
+    };
+
     return (
         <div className="tfa-layout">
             <div className="tfa-main-content">
                 <div className="max-w-7xl mx-auto px-4">
                     {/* Hero Section with Main News */}
-                    <div className="tfa-container mb-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Main Hero */}
-                            <div className="lg:col-span-2">
-                                {lastNews?.[0] && (
-                                    <div
-                                        className="relative h-80 rounded-lg overflow-hidden cursor-pointer"
-                                        onClick={() => navigate("/news")}
-                                    >
-                                        <img
-                                            src={
-                                                lastNews[0].photo ||
-                                                "/api/placeholder/800/320"
-                                            }
-                                            alt={getTranslation(
-                                                lastNews[0],
-                                                "title"
-                                            )}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                                        <div className="absolute bottom-6 left-6 right-6">
-                                            <h2 className="text-white text-2xl font-bold mb-2 leading-tight">
-                                                {getTranslation(
-                                                    lastNews[0],
-                                                    "title"
-                                                )}
-                                            </h2>
-                                            <p className="text-white/80 text-sm">
-                                                {formatDate(
-                                                    lastNews[0].created_at
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Side News */}
-                            <div className="space-y-4">
-                                {lastNews?.slice(1, 4).map((news) => (
-                                    <div
-                                        key={news.uuid}
-                                        className="bg-white border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                                        onClick={() => navigate("/news")}
-                                    >
-                                        <h4 className="font-medium text-gray-900 mb-2 line-clamp-2 text-sm">
-                                            {getTranslation(news, "title")}
-                                        </h4>
-                                        <p className="text-xs text-gray-500">
-                                            {formatDate(news.created_at)}
-                                        </p>
-                                    </div>
-                                ))}
+                    {lastNews?.[0] && (
+                        <div
+                            className="w-full h-[340px] md:h-[420px] relative flex items-end justify-start mb-8 rounded-lg overflow-hidden"
+                            style={{
+                                backgroundImage: `url(${
+                                    lastNews[0].photo ||
+                                    "/api/placeholder/1200/420"
+                                })`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                minHeight: "340px",
+                            }}
+                            onClick={() => navigate("/news")}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent"></div>
+                            <div className="relative z-10 px-10 py-8">
+                                <h1 className="text-3xl md:text-5xl font-bold text-white mb-5 max-w-2xl">
+                                    {getTranslation(lastNews[0], "title")}
+                                </h1>
+                                <p className="text-lg text-white/80 mb-2">
+                                    {getTranslation(lastNews[0], "description")}
+                                </p>
+                                <span className="text-white/60 text-sm">
+                                    {formatDate(lastNews[0].created_at)}
+                                </span>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-6">
                             {/* League Table */}
                             {teams && (
-                                <div className="tfa-container">
-                                    <h2 className="tfa-section-title">
-                                        {getTranslation(teams, "league_name")} -{" "}
-                                        {new Date().getFullYear()}
-                                    </h2>
+                                <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+                                    <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4">
+                                        <h2 className="text-xl font-bold">
+                                            {getTranslation(
+                                                teams,
+                                                "league_name"
+                                            )}{" "}
+                                            - {new Date().getFullYear()}
+                                        </h2>
+                                    </div>
 
-                                    <table className="tfa-table">
-                                        <thead>
-                                            <tr>
-                                                <th className="w-8">#</th>
-                                                <th>
-                                                    {language === "uz" &&
-                                                        "Jamoa"}
-                                                    {language === "ru" &&
-                                                        "Команда"}
-                                                    {language === "en" &&
-                                                        "Team"}
-                                                </th>
-                                                <th className="w-8 text-center">
-                                                    И
-                                                </th>
-                                                <th className="w-8 text-center">
-                                                    В
-                                                </th>
-                                                <th className="w-8 text-center">
-                                                    Н
-                                                </th>
-                                                <th className="w-8 text-center">
-                                                    П
-                                                </th>
-                                                <th className="w-12 text-center">
-                                                    М
-                                                </th>
-                                                <th className="w-8 text-center">
-                                                    О
-                                                </th>
-                                                <th className="w-20"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {teams.data
-                                                ?.slice(0, 15)
-                                                .map((team, index) => (
-                                                    <tr
-                                                        key={team.uuid}
-                                                        className={`hover:bg-gray-50 ${
-                                                            index === 0
-                                                                ? "bg-green-50"
-                                                                : index < 3
-                                                                ? "bg-blue-50"
-                                                                : index >=
-                                                                  teams.data
-                                                                      .length -
-                                                                      3
-                                                                ? "bg-red-50"
-                                                                : ""
-                                                        }`}
-                                                    >
-                                                        <td className="text-center font-bold">
-                                                            <span
-                                                                className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold ${
-                                                                    index === 0
-                                                                        ? "bg-yellow-500 text-white"
-                                                                        : index <
-                                                                          3
-                                                                        ? "bg-green-500 text-white"
-                                                                        : index >=
-                                                                          teams
-                                                                              .data
-                                                                              .length -
-                                                                              3
-                                                                        ? "bg-red-500 text-white"
-                                                                        : "bg-gray-200 text-gray-700"
-                                                                }`}
-                                                            >
-                                                                {index + 1}
-                                                            </span>
-                                                        </td>
-                                                        <td className="team-name">
-                                                            {getTranslation(
-                                                                team
-                                                            )}
-                                                        </td>
-                                                        <td className="text-center text-sm">
-                                                            {team.data
-                                                                ?.matches || 0}
-                                                        </td>
-                                                        <td className="text-center text-sm text-green-600 font-medium">
-                                                            {team.data?.wins ||
-                                                                0}
-                                                        </td>
-                                                        <td className="text-center text-sm text-yellow-600 font-medium">
-                                                            {team.data?.draws ||
-                                                                0}
-                                                        </td>
-                                                        <td className="text-center text-sm text-red-600 font-medium">
-                                                            {team.data?.loses ||
-                                                                0}
-                                                        </td>
-                                                        <td className="text-center text-sm">
-                                                            <span className="text-green-600">
-                                                                {team.data
-                                                                    ?.my_goals ||
-                                                                    0}
-                                                            </span>
-                                                            <span className="text-gray-400">
-                                                                -
-                                                            </span>
-                                                            <span className="text-red-600">
-                                                                {team.data
-                                                                    ?.your_goals ||
-                                                                    0}
-                                                            </span>
-                                                        </td>
-                                                        <td className="text-center">
-                                                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-bold">
-                                                                {team.data
-                                                                    ?.points ||
-                                                                    0}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            {/* Form indicators */}
-                                                            <div className="flex space-x-1">
-                                                                {[
-                                                                    1, 2, 3, 4,
-                                                                    5,
-                                                                ].map((i) => (
-                                                                    <div
-                                                                        key={i}
-                                                                        className={`w-3 h-3 rounded ${
-                                                                            Math.random() >
-                                                                            0.6
-                                                                                ? "bg-green-500"
-                                                                                : Math.random() >
-                                                                                  0.3
-                                                                                ? "bg-yellow-500"
-                                                                                : "bg-red-500"
-                                                                        }`}
-                                                                    ></div>
-                                                                ))}
-                                                            </div>
-                                                        </td>
+                                    <div className="flex bg-gray-100 border-b">
+                                        <button
+                                            className={`px-6 py-3 text-sm font-semibold transition-all ${
+                                                tableTab === "table"
+                                                    ? "bg-blue-600 text-white border-b-2 border-blue-600"
+                                                    : "text-gray-600 hover:text-blue-600"
+                                            }`}
+                                            onClick={() => setTableTab("table")}
+                                        >
+                                            ТАБЛИЦА
+                                        </button>
+                                        <button
+                                            className={`px-6 py-3 text-sm font-semibold transition-all ${
+                                                tableTab === "form"
+                                                    ? "bg-blue-600 text-white border-b-2 border-blue-600"
+                                                    : "text-gray-600 hover:text-blue-600"
+                                            }`}
+                                            onClick={() => setTableTab("form")}
+                                        >
+                                            ФОРМА
+                                        </button>
+                                    </div>
+
+                                    {tableTab === "table" && (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-50 border-b-2 border-gray-200">
+                                                    <tr>
+                                                        <th className="w-8 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            #
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">
+                                                            КОМАНДА
+                                                        </th>
+                                                        <th className="w-12 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            И
+                                                        </th>
+                                                        <th className="w-12 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            В
+                                                        </th>
+                                                        <th className="w-12 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            Н
+                                                        </th>
+                                                        <th className="w-12 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            П
+                                                        </th>
+                                                        <th className="w-20 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            МЗ-МП
+                                                        </th>
+                                                        <th className="w-12 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            О
+                                                        </th>
+                                                        <th className="w-40 px-4 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            ФОРМА
+                                                        </th>
                                                     </tr>
-                                                ))}
-                                        </tbody>
-                                    </table>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {teams.data
+                                                        ?.slice(0, 15)
+                                                        .map((team, idx) => (
+                                                            <tr
+                                                                key={team.uuid}
+                                                                className="hover:bg-gray-50 transition-colors"
+                                                            >
+                                                                <td className="px-2 py-4 text-center font-bold text-gray-900">
+                                                                    {idx + 1}
+                                                                </td>
+                                                                <td className="px-4 py-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        {team.logo && (
+                                                                            <img
+                                                                                src={
+                                                                                    team.logo
+                                                                                }
+                                                                                alt=""
+                                                                                className="w-8 h-8 rounded-full object-cover"
+                                                                            />
+                                                                        )}
+                                                                        <span className="font-medium text-gray-900">
+                                                                            {getTranslation(
+                                                                                team
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-2 py-4 text-center text-gray-700 font-medium">
+                                                                    {team.data
+                                                                        ?.matches ||
+                                                                        0}
+                                                                </td>
+                                                                <td className="px-2 py-4 text-center text-green-600 font-bold">
+                                                                    {team.data
+                                                                        ?.wins ||
+                                                                        0}
+                                                                </td>
+                                                                <td className="px-2 py-4 text-center text-blue-600 font-bold">
+                                                                    {team.data
+                                                                        ?.draws ||
+                                                                        0}
+                                                                </td>
+                                                                <td className="px-2 py-4 text-center text-red-600 font-bold">
+                                                                    {team.data
+                                                                        ?.loses ||
+                                                                        0}
+                                                                </td>
+                                                                <td className="px-2 py-4 text-center text-gray-700 font-medium">
+                                                                    {team.data
+                                                                        ?.my_goals ||
+                                                                        0}{" "}
+                                                                    -{" "}
+                                                                    {team.data
+                                                                        ?.your_goals ||
+                                                                        0}
+                                                                </td>
+                                                                <td className="px-2 py-4 text-center font-bold text-gray-900">
+                                                                    {team.data
+                                                                        ?.points ||
+                                                                        0}
+                                                                </td>
+                                                                <td className="px-4 py-4">
+                                                                    <div className="flex gap-1 justify-center">
+                                                                        {getTeamForm(
+                                                                            team
+                                                                        ).map(
+                                                                            (
+                                                                                res,
+                                                                                i
+                                                                            ) => (
+                                                                                <span
+                                                                                    key={
+                                                                                        i
+                                                                                    }
+                                                                                    className={`w-7 h-7 rounded flex items-center justify-center text-xs text-white font-bold ${getFormColor(
+                                                                                        res
+                                                                                    )}`}
+                                                                                >
+                                                                                    {
+                                                                                        res
+                                                                                    }
+                                                                                </span>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+
+                                    {tableTab === "form" && (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-50 border-b-2 border-gray-200">
+                                                    <tr>
+                                                        <th className="w-8 px-2 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            #
+                                                        </th>
+                                                        <th className="px-4 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">
+                                                            КОМАНДА
+                                                        </th>
+                                                        <th className="w-40 px-4 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">
+                                                            ФОРМА
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {teams.data
+                                                        ?.slice(0, 15)
+                                                        .map((team, idx) => (
+                                                            <tr
+                                                                key={team.uuid}
+                                                                className="hover:bg-gray-50 transition-colors"
+                                                            >
+                                                                <td className="px-2 py-4 text-center font-bold text-gray-900">
+                                                                    {idx + 1}
+                                                                </td>
+                                                                <td className="px-4 py-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        {team.logo && (
+                                                                            <img
+                                                                                src={
+                                                                                    team.logo
+                                                                                }
+                                                                                alt=""
+                                                                                className="w-8 h-8 rounded-full object-cover"
+                                                                            />
+                                                                        )}
+                                                                        <span className="font-medium text-gray-900">
+                                                                            {getTranslation(
+                                                                                team
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-4">
+                                                                    <div className="flex gap-1 justify-center">
+                                                                        {getTeamForm(
+                                                                            team
+                                                                        ).map(
+                                                                            (
+                                                                                res,
+                                                                                i
+                                                                            ) => (
+                                                                                <span
+                                                                                    key={
+                                                                                        i
+                                                                                    }
+                                                                                    className={`w-7 h-7 rounded flex items-center justify-center text-xs text-white font-bold ${getFormColor(
+                                                                                        res
+                                                                                    )}`}
+                                                                                >
+                                                                                    {
+                                                                                        res
+                                                                                    }
+                                                                                </span>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -336,7 +421,6 @@ const Home = () => {
                                         <FaArrowRight />
                                     </button>
                                 </h2>
-
                                 <table className="tfa-table">
                                     <thead>
                                         <tr>
@@ -439,7 +523,6 @@ const Home = () => {
                                         <FaArrowRight />
                                     </button>
                                 </h2>
-
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {allNews?.slice(0, 6).map((news) => (
                                         <div
@@ -495,7 +578,6 @@ const Home = () => {
                                         <FaArrowRight />
                                     </button>
                                 </h2>
-
                                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                                     {photos?.slice(0, 12).map((photo) => (
                                         <div
@@ -536,7 +618,6 @@ const Home = () => {
                                         <FaArrowRight />
                                     </button>
                                 </h2>
-
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {videos?.slice(0, 3).map((video) => (
                                         <div
@@ -797,7 +878,7 @@ const Home = () => {
                                     {language === "en" && "Birthdays"}
                                 </h3>
                                 <div className="space-y-2">
-                                    {topPlayers?.slice(0, 3).map((player) => (
+                                    {topPlayers?.slice(0, 6).map((player) => (
                                         <div
                                             key={player.uuid}
                                             className="flex items-center justify-between text-sm"
